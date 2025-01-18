@@ -14,8 +14,8 @@ namespace BulkyWeb.Controllers
 
 		public IActionResult Index()
 		{
-			List<Category> categorieList = _db.Categories.ToList();
-			return View(categorieList);
+			List<Category> categoriesList = _db.Categories.ToList();
+			return View(categoriesList);
 		}
 
 
@@ -29,26 +29,27 @@ namespace BulkyWeb.Controllers
 		{
 			if(obj.Name == obj.DisplayOrder.ToString())
 			{
-				ModelState.AddModelError("Name","The DisplayOrder cannot excatly match the Name.");
+				ModelState.AddModelError("Name", "The DisplayOrder cannot exactly match the Name.");
 			}
 
 			if(ModelState.IsValid)
 			{
 				_db.Categories.Add(obj);
 				_db.SaveChanges();
+				TempData["success"] = "Category created successfully";
 				return RedirectToAction("Index");
 			}
 			return View();
 			
 		}
 
-		public IActionResult Edit(int? id)
+		public IActionResult Edit(int? categoryId)
 		{
-			if(id == null || id == 0)
+			if(categoryId == null || categoryId == 0)
 			{
 				return NotFound();
 			}
-			Category? category = _db.Categories.Find(id);
+			Category? category = _db.Categories.Find(categoryId);
 			if(category == null)
 			{
 				return NotFound();
@@ -61,17 +62,33 @@ namespace BulkyWeb.Controllers
 		{
 			if (obj.Name == obj.DisplayOrder.ToString())
 			{
-				ModelState.AddModelError("Name", "The DisplayOrder cannot excatly match the Name.");
+				ModelState.AddModelError("Name", "The DisplayOrder cannot exactly match the Name.");
 			}
 
 			if (ModelState.IsValid)
 			{
-				_db.Categories.Add(obj);
+				_db.Categories.Update(obj);
 				_db.SaveChanges();
+				TempData["success"] = "Category updated successfully";
 				return RedirectToAction("Index");
 			}
-			return View();
+            return RedirectToAction("Index");
+        }
 
-		}
-	}
+        [HttpPost]
+        public JsonResult Delete(int? categoryId)
+        {
+			bool result = false;
+			Category? obj = _db.Categories.Find(categoryId);
+			if(obj != null)
+			{
+				_db.Categories.Remove(obj);
+				_db.SaveChanges();
+				TempData["success"] = "Category deleted successfully";
+				result = true;
+			}
+			
+			return Json(result);
+        }
+    }
 }
